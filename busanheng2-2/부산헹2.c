@@ -156,9 +156,7 @@ void move_zombie() {
 
     if (turn % 2 != 0) { // 홀수 턴일 때만 좀비가 움직임
         if (100 - percentile_probability <= rzom) {
-            zombie -= 1; // 좀비를 움직임
-        }else {
-            temp_zombie = zombie;
+            zombie -= 1;
         }
     }
 }
@@ -176,20 +174,14 @@ void print_move_zombie() {
         printf("zombie: stay %d (cannot move)\n", zombie);
     }
     // 좀비의 이동 방향을 결정하는 부분 수정
-    if(turn % 2 != 0) {
+    if(zombie + 1 == madongseok && zombie - 1 == citizen) {
         if(ma_aggro > citizen_aggro) {
-            // 마동석 쪽으로 이동
-            if (zombie + 1 < madongseok) {
-                zombie += 1;
-         }
-        } else {
-            // 시민 쪽으로 이동
-            if (zombie - 1 > citizen) {
-                zombie -= 1;
+
+            stamina -= 1;
+            printf("Zombie attacked madongseok (aggro %d vs %d, madongseok stamina: %d -> %d)", citizen_aggro, ma_aggro, temp_stamina, stamina);
         }
+        } 
     }
-}
-}
 
 
 // 마동석 이동 함수
@@ -213,17 +205,17 @@ void ma_move() {
 void print_ma_move() {
         temp_aggro = ma_aggro;
         if(move == MOVE_STAY ) {
-        ma_aggro -= 1;
-        printf("madongseok: stay %d (aggro: %d -> %d, stamina: %d)\n", madongseok, temp_aggro, ma_aggro, stamina);
-        } else {
-        ma_aggro += 1;
-        printf("madongseok: left %d (aggro: %d -> %d, stamina: %d)\n", madongseok, temp_aggro, ma_aggro, stamina);
-        }
+            ma_aggro -= 1;
         if (ma_aggro < AGGRO_MIN) {
             ma_aggro = AGGRO_MIN;
         }
-        if (ma_aggro > AGGRO_MAX) {
+        printf("madongseok: stay %d (aggro: %d -> %d, stamina: %d)\n", madongseok, temp_aggro, ma_aggro, stamina);
+        } else {
+            ma_aggro += 1;
+        if (ma_aggro, temp_aggro > AGGRO_MAX) {
             ma_aggro = AGGRO_MAX;
+        }
+        printf("madongseok: left %d (aggro: %d -> %d, stamina: %d)\n", madongseok, temp_aggro, ma_aggro, stamina);
         }
 }
 
@@ -291,7 +283,7 @@ void bad_ending() {
 void zombie_catch() {
     if (citizen == zombie - 1) {
         bad_ending();
-        exit(0);
+        exit(1);
     }
 }
 
@@ -299,27 +291,21 @@ void zombie_catch() {
 void citizen_escape() {
     if (citizen == 1) {
         happy_ending();
-        exit(0);
+        exit(1);
     }
 }
 void result() {
     if(citizen != 1) {
     printf("citizen does nothing.");
     }
-    
-    if(citizen == zombie - 1 && zombie + 1 == madongseok) {
-        temp_stamina = stamina;
-        if(ma_aggro >= citizen_aggro) {
-            stamina -= 1;
-            printf("aggro: %d vs %d, madongseok stamina: %d -> %d", citizen_aggro, ma_aggro, temp_stamina, stamina);
-        } else {
-            printf("zombie attacked nobody.");
-        }
-        
-
-    }
 }
-
+void ma_stamina_zero() {
+    if(stamina == 0) {
+        printf("madongseok die...");
+        bad_ending();
+        exit(1);
+}
+}
 int main() {
     srand((unsigned int)time(NULL));
     print_intro();
@@ -370,6 +356,9 @@ int main() {
 
         // 시민이 탈출했는지 확인
         citizen_escape();
+
+        //마동석의 스테미나가 0이 되었을때
+        ma_stamina_zero();
     }
     
     return 0;
